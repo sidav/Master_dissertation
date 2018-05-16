@@ -1,0 +1,98 @@
+\documentclass[a4paper,14pt,russian,oneside,final]{extreport}
+\usepackage[T2A]{fontenc}
+\usepackage[cp1251]{inputenc}
+\usepackage{cmap}
+\usepackage[warn]{mathtext}
+\usepackage[russian,english]{babel}
+\usepackage{extsizes,amsmath,amsfonts,amssymb}
+\usepackage{amsthm,calc,fp,cite}
+\usepackage[left=3cm,top=2.0cm,right=1.5cm,bottom=2.7cm]{geometry}
+%\usepackage[nodisplayskipstretch]{setspace}
+%\setstretch{1.1}
+%\linespread{2}
+\usepackage{setspace}
+\mag 1440 \sloppy\makeatletter
+% Выбор шрифта по-умолчанию.
+\usepackage{pscyr}
+\renewcommand{\rmdefault}{ftm} % Times New Roman
+
+
+% Используем картинки 
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+% Переименовываем "Figure N" в подписях картинок в "Рис. N"
+\addto\captionsenglish{\renewcommand{\figurename}{Рис.}}
+
+% Отключает использование изменяемых межсловных пробелов
+\frenchspacing
+
+% Переопределяем стандартную нумерацию, т.к. в отчете будут только section и т.д. в терминологии TeX
+\makeatletter
+\renewcommand{\thesection}{\arabic{section}}
+\makeatother
+
+% Работа с колонтитулами
+\usepackage{fancyhdr} % пакет для установки колонтитулов
+\pagestyle{fancy} % смена стиля оформления страниц
+
+% Нумерация страниц располагается справа снизу страницы
+\fancyhf{} % очистка текущих значений
+\fancyfoot[R]{\thepage} % установка верхнего колонтитула
+\renewcommand{\footrulewidth}{0pt} % убрать разделительную линию внизу страницы
+\renewcommand{\headrulewidth}{0pt} % убрать разделительную линию вверху страницы
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \rfoot{\thepage}}
+
+% Задает стиль заголовков подразделов
+\makeatletter
+\renewcommand\subsection{%
+  \@startsection{subsection}{2}%
+    {\fivecharsapprox}%
+    {-1em \@plus -1ex \@minus -.2ex}%
+    {1em \@plus .2ex}%
+    {\raggedright\hyphenpenalty=10000\normalfont\normalsize\bfseries}}
+\makeatother
+
+% Задает стиль заголовков пунктов
+\makeatletter
+\renewcommand\subsubsection{
+  \@startsection{subsubsection}{3}%
+    {\fivecharsapprox}%
+    {-1em \@plus -1ex \@minus -.2ex}%
+    {\z@}%
+    {\raggedright\hyphenpenalty=10000\normalfont\normalsize\bfseries}}
+\makeatother
+
+% Это я тут нахуевертил
+\makeatletter
+\renewcommand\section{%
+	\@startsection {section}{1}%
+	{\z@}%
+	{-1em \@plus -1ex \@minus -.2ex}%
+	{1em \@plus .2ex}%
+	{\hyphenpenalty=10000\normalfont\large\bfseries}%
+}
+\makeatother
+
+% Для оформления введения и заключения (выравнивание по центру)
+\makeatletter
+\newcommand\sectioncentered{%
+	\clearpage\@startsection {section}{1}%
+    {\z@}%
+    {-1em \@plus -1ex \@minus -.2ex}%
+    {1em \@plus .2ex}%
+    {\centering\hyphenpenalty=10000\normalfont\large\bfseries\MakeUppercase}%
+    }
+\makeatother
+
+% Задает стиль библиографии
+\bibliographystyle{styles/belarus-specific-utf8gost780u}
+
+\newtheorem{Th}{Теорема}
+\newtheorem{Def}{Определение}
+\newtheorem{Example}{Пример}[section]
+\newenvironment{ProofRus}
+{\par\noindent{\bf Замечание.}}
+{\hfill}
+\newcounter{abcd}
