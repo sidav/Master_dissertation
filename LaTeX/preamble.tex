@@ -88,9 +88,9 @@
 
 % Задает стиль библиографии
 \bibliographystyle{styles/belarus-specific-utf8gost780u}
-\addto\captionsrussian{\def\refname{Список используемой литературы}}
+\addto\captionsrussian{\renewcommand\bibname{Список используемых источников}}
 \makeatletter
-\def\@biblabel#1{#1. }
+\def\@biblabel#1{#1. } % меняем вид нумерации
 \makeatother
 
 \newtheorem{Th}{Теорема}
