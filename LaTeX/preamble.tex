@@ -88,6 +88,10 @@
 
 % Задает стиль библиографии
 \bibliographystyle{styles/belarus-specific-utf8gost780u}
+\addto\captionsrussian{\def\refname{Список используемой литературы}}
+\makeatletter
+\def\@biblabel#1{#1. }
+\makeatother
 
 \newtheorem{Th}{Теорема}
 \newtheorem{Def}{Определение}
