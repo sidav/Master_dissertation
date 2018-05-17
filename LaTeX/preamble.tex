@@ -16,6 +16,9 @@
 \usepackage{pscyr}
 \renewcommand{\rmdefault}{ftm} % Times New Roman
 
+\usepackage{indentfirst} % Красная строка после заголовка
+\setlength\parindent{1.25cm}
+
 
 % Используем картинки 
 \usepackage{graphicx}
@@ -64,7 +67,7 @@
     {\raggedright\hyphenpenalty=10000\normalfont\normalsize\bfseries}}
 \makeatother
 
-% Это я тут нахуевертил
+% Это я тут нахимичил
 \makeatletter
 \renewcommand\section{%
 	\@startsection {section}{1}%
@@ -88,7 +91,7 @@
 
 % Задает стиль библиографии
 \bibliographystyle{styles/belarus-specific-utf8gost780u}
-\addto\captionsrussian{\renewcommand\bibname{Список используемых источников}}
+\addto\captionsrussian{\renewcommand\bibname{Список используемых источников. Шрифт поправлю, Борис Николаевич!}}
 \makeatletter
 \def\@biblabel#1{#1. } % меняем вид нумерации
 \makeatother
