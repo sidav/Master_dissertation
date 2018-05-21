@@ -1,8 +1,13 @@
 % Содержание пишется полужирным шрифтом, по центру всеми заглавными буквами
-\renewcommand \contentsname {\centerline{\bfseries\large{\MakeUppercase{оглавление}}}}
-
-{
-\normalsize\selectfont
-\tableofcontents
-\newpage
-} 
+% у меня тут грязный хак вместо оглавления, извините
+\sectioncentered*{Оглавление}
+\makeatletter
+\@starttoc{toc}
+\makeatother
+%\renewcommand \contentsname {\centerline{\bfseries\large{\MakeUppercase{оглавление}}}}
+%
+%{
+%\normalsize\selectfont
+%\tableofcontents
+%\newpage
+%} 
