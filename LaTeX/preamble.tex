@@ -95,7 +95,12 @@
 
 % Задает стиль библиографии
 \bibliographystyle{styles/belarus-specific-utf8gost780u}
-\addto\captionsrussian{\renewcommand\bibname{Список используемых источников. Шрифт поправлю, Борис Николаевич!}}
+%\addto\captionsrussian{\renewcommand\bibname{
+%		\large\bfseries\uppercase{
+%			\centerline{Список используемых источников}}
+%	% следующая строка - грязный хак, не надо её трогать, а то не будет компилироваться.
+%	\global\def\bibname{Список используемых источников} % да, вот эта.
+%}}
 \makeatletter
 \def\@biblabel#1{#1. } % меняем вид нумерации
 \makeatother
