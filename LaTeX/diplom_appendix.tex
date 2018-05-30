@@ -4,9 +4,2758 @@
 
 Электронная обучающая программа для изучения асимметричной криптосистемы Эль-Гамаля.
 
-\lstset{basicstyle=\ttfamily,breaklines=true}
+\lstset{basicstyle=\ttfamily\small,breaklines=true}
 \begin{lstlisting}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
-ВСТАВИТЬ КОД ПРЯМ ВМЕСТО ЭТОГО ТЕКСТА 
+namespace ElgamalTutor
+{
+  public partial class AboutForm : Form
+  {
+    public AboutForm()
+    {
+      InitializeComponent();
+    }
+  }	
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
 
+namespace ElgamalTutor
+{
+  static class Answers
+  {
+    public static int formToShow = 0;
+    public static bool tutorialEnded = false;
+    public static bool interruptTutorial = false;
+
+    public static BigInteger p = new BigInteger(0);
+    public static BigInteger g = new BigInteger(0);
+    public static BigInteger x = new BigInteger(0);
+    public static BigInteger y = new BigInteger(0);
+    //public static BigInteger k = new BigInteger(0);
+    public static BigInteger a = new BigInteger(0);
+    public static BigInteger b = new BigInteger(0);
+
+    public static bool[] modpowAnswers = new bool[3];
+    public static bool[] EulerAnswers = new bool[3];
+    public static bool[] ReverseAnswers = new bool[2];
+    public static bool[] DiscreteLogAnswers = new bool[2];
+    public static bool[] AlgorithmicDLOGAnswers = new bool[2];
+    public static bool[] TestAnswers = new bool[10];
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Numerics;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  static class BabyStepGiantStep
+  {
+
+    public static BigInteger sqrt(BigInteger n)
+    {
+      if (n == 0) return 0;
+      if (n > 0)
+      {
+        int bitLength = Convert.ToInt32(Math.Ceiling(BigInteger.Log(n, 2)));
+        BigInteger root = BigInteger.One << (bitLength / 2);
+
+        while (!isSqrt(n, root))
+        {
+          root += n / root;
+          root /= 2;
+        }
+
+        return root;
+      }
+
+      throw new ArithmeticException("NaN");
+    }
+
+    private static Boolean isSqrt(BigInteger n, BigInteger root)
+    {
+      BigInteger lowerBound = root * root;
+      BigInteger upperBound = (root + 1) * (root + 1);
+
+      return (n >= lowerBound && n < upperBound);
+    }
+
+    public static BigInteger bsgs(BigInteger a, BigInteger b, BigInteger m)
+    {
+
+      if (a == b)
+        return 1;
+
+      var map = new Dictionary<BigInteger, BigInteger>();
+      BigInteger ans, n, i;
+      ans = 1;
+
+      n = sqrt(m) + 1; // 1
+
+      for (i = n; i >= 1; --i) // 3
+      {
+        BigInteger curKey = BigInteger.ModPow(a, i * n, m);
+        if (!(map.ContainsKey(curKey)))
+          map.Add(curKey, i);
+        else
+          map[curKey] = i;
+      }
+
+      for (i = 0; i <= n; ++i) // 4
+      {
+        BigInteger cur = (BigInteger.ModPow(a, i, m) * b) % m;
+        if (map.ContainsKey(cur))
+        {
+          ans = map[cur] * n - i;
+          if (ans < m) return ans;
+        }
+      }
+
+      return -1;
+    }
+
+    public static BigInteger bsgs2(BigInteger a, BigInteger b, BigInteger m, ProgressBar progress = null)
+    {
+
+      if (a == b)
+        return 1;
+
+      var map = new Dictionary<BigInteger, BigInteger>();
+      BigInteger ans, n, i, an, curKey;
+      ans = 1;
+      an = 1;
+
+      n = sqrt(m) + 1; // 1
+      an = BigInteger.ModPow(a, n, m);
+      //for (i = 0; i < n; ++i)
+      //  an = (an * a) % m;
+
+      BigInteger tick = n / 50; // for progressbar
+      if (tick == 0)
+        tick = 1;
+      // int progressQuantum = (progress.Width / 100);
+
+      for (i = 1, curKey = an; i <= n; ++i) // 3
+      {
+        if (!(map.ContainsKey(curKey)))
+          map.Add(curKey, i);
+        curKey = (curKey * an) % m;
+
+        if (progress != null) // progressbar
+          if (i % tick == 0)      // progressbar!
+            progress.Increment(progress.Width / 100);  //
+      }
+
+      for (i = 0, curKey = b; i <= n; ++i) // 4
+      {
+        if (map.ContainsKey(curKey))
+        {
+          ans = map[curKey] * n - i;
+          if (ans < m) return ans;
+        }
+        curKey = (curKey * a) % m;
+
+        if (progress != null) // progressbar
+          if (i % tick == 0)      // progressbar!
+            progress.Increment(progress.Width / 100);  //
+
+      }
+
+      return -1;
+    }
+
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  static class BigIntegerSqrt
+  {
+
+    private static BigInteger modulo = BigInteger.Pow(BigInteger.Parse("10000000000000000000000"), 10000);
+
+    public static BigInteger Sqrt(this BigInteger n)
+    {
+      if (n == 0) return 0;
+      if (n > 0)
+      {
+        int bitLength = Convert.ToInt32(Math.Ceiling(BigInteger.Log(n, 2)));
+        BigInteger root = BigInteger.One << (bitLength / 2);
+
+        while (!isSqrt(n, root))
+        {
+          root += n / root;
+          root /= 2;
+        }
+
+        return root;
+      }
+
+      throw new ArithmeticException("NaN");
+    }
+
+    private static Boolean isSqrt(BigInteger n, BigInteger root)
+    {
+      BigInteger lowerBound = root * root;
+      BigInteger upperBound = (root + 1) * (root + 1);
+
+      return (n >= lowerBound && n < upperBound);
+    }
+
+    public static BigInteger Power(this BigInteger n, BigInteger exponent)
+    {
+      // return BigInteger.Pow(n, (int)exponent);
+      return BigInteger.ModPow(n, exponent, modulo);
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class CalcfiForm : Form
+  {
+    BigInteger input = new BigInteger(0);
+    public CalcfiForm()
+    {
+      InitializeComponent();
+    }
+
+    private void calcBtn_Click(object sender, EventArgs e)
+    {
+      this.Enabled = false;
+      input = BigInteger.Parse(inputBox.Text);
+      input = CryptoMath.phi(input);
+      outputBox.Text = input.ToString();
+      label2.Visible = true;
+      outputBox.Visible = true;
+      this.Enabled = true;
+    }
+
+    private void inputBox_TextChanged(object sender, EventArgs e)
+    {
+      label2.Visible = false;
+      outputBox.Visible = false;
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  class CryptoMath
+  {
+    public static Random rand = new Random();
+    public static int MILLER_RABIN_ROUNDS = 4000;
+    public const long DIGITS = 20;
+
+    public static BigInteger phi(BigInteger n)
+    {
+      BigInteger result = n;
+      BigInteger i = new BigInteger(2);
+      for (i = 2; i * i <= n; ++i)
+        if (n % i == 0)
+        {
+          while (n % i == 0)
+            n /= i;
+          result -= result / i;
+        }
+      if (n > 1)
+        result -= result / n;
+      return result;
+    }
+
+    //public static BigInteger powmod(BigInteger a,BigInteger b,BigInteger m)
+    //{
+    //  BigInteger r=1;
+    //  a%=m;
+    //  while (b>0)
+    //  {
+    //    if (b%2 ==1) r=(r*a)%m;
+    //    a=(a*a)%m;
+    //    b>>=1;
+    //  }
+    //  return r;
+    //}
+
+
+
+    public static bool isPrime(BigInteger n)
+    {
+      if (n == 2 || n == 3 || n == 5 || n == 7)
+        return true;
+      if ((n % 60) % 5 == 0)
+      return false;
+      if ((n % 60) % 3 == 0)
+      return false;
+      if ((n % 60) % 2 == 0)
+      return false;
+      //тест Миллера-Рабина
+      //сначала представим m-1 в виде m-1 = 2^s * t
+      BigInteger m = n-1;
+      BigInteger s = 0;
+      BigInteger t = 1;
+      while(m/2 > 0 && m%2 == 0)
+      {
+         m /= 2;
+         s++;
+      }
+      t = m;
+      m = n;
+      for (BigInteger i = 0; i < MILLER_RABIN_ROUNDS; i++)    //максимальное i неплохо бы там log_2(m)
+      {
+        BigInteger a = rand.Next()%(m-3) + 3; 
+        BigInteger x = BigInteger.ModPow(a,t,m);
+        if (x == 1 || x == m-1) continue;
+        for (BigInteger j = 0; j < s-1; j++)
+        {
+          x = BigInteger.ModPow(x, 2, m);
+          if (x == m-1) break;
+          if (x == 1)  return false;
+
+        }
+       if (x==m-1) continue;
+       return false;
+      }
+       return true;
+    }
+
+    public static BigInteger calculatePrimitiveRoot(BigInteger p) //!вычислялка первообразного корня по модулю p.
+    {
+    	List<BigInteger> fact = new List<BigInteger>();
+    	BigInteger phi = p-1,  n = phi;
+	    for (BigInteger i=2; i*i<=n; ++i)
+	    	if (n % i == 0) {
+	    		fact.Add(i);
+		  	while (n % i == 0)
+		  		n /= i;
+	  	  }
+	    if (n > 1)
+		    fact.Add(n);
+    	for (BigInteger res=2; res<=p; ++res)
+      {
+	  	  bool ok = true;
+	  	  for (int i=0; i<fact.Count && ok; ++i)
+			    ok &= BigInteger.ModPow(res, phi / fact[i], p) != 1;
+		    if (ok)  return res;
+	    }
+    	return -1;
+    }
+
+    public static BigInteger calculateFakePrimitiveRoot(BigInteger p) //!вычислялка первообразного корня по модулю p.
+    {
+      List<BigInteger> fact = new List<BigInteger>();
+      BigInteger phi = p - 1, n = phi;
+      for (BigInteger i = 2; i * i * i * i <= n; ++i)
+        if (n % i == 0)
+        {
+          fact.Add(i);
+          while (n % i == 0)
+            n /= i;
+        }
+      if (n > 1)
+        fact.Add(n);
+      for (BigInteger res = 2; res <= p; ++res)
+      {
+        bool ok = true;
+        for (int i = 0; i < fact.Count && ok; ++i)
+          ok &= BigInteger.ModPow(res, phi / fact[i], p) != 1;
+        if (ok) return res;
+      }
+      return -1;
+    }
+
+    public static BigInteger genSimpleRand(long decDigits/*=DIGITS*/)
+    {
+      BigInteger a = new BigInteger(0);
+      BigInteger pow = 1;
+      while (!isPrime(a))
+      {
+        a = 0;
+        pow = 1;
+        for (long i = 0; i < decDigits; i++)
+        {
+          BigInteger rnd = (rand.Next(8)+1) * pow;
+          a += rnd;
+          pow *= 10;
+        }
+      }
+      return a;
+    }
+
+    public static BigInteger genRand(long decDigits/* = DIGITS*/)
+    {
+      BigInteger a = new BigInteger(0);
+      BigInteger pow = 1;
+        a = 0;
+        pow = 1;
+        for (long i = 0; i < decDigits; i++)
+        {
+          BigInteger rnd = rand.Next(10) * pow;
+          a += rnd;
+          pow *= 10;
+        }
+      return a;
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class DecryptForm : Form
+  {
+    private BigInteger p = new BigInteger(0);
+    private BigInteger g = new BigInteger(0);
+    private BigInteger x = new BigInteger(0);
+    private BigInteger y = new BigInteger(0);
+    private BigInteger a = new BigInteger(0);
+    private BigInteger b = new BigInteger(0);
+    private BigInteger M = new BigInteger(0);
+    private long digits = 10;
+    public DecryptForm()
+    {
+      InitializeComponent();
+      digitsBox.Text = digits.ToString();
+    }
+
+    private void genpgBtn_Click(object sender, EventArgs e)
+    {
+      string pstr;
+      switch (digitsBox.Text)
+      {
+        case "p40":
+          pstr = "7524548124131735373612526345481757634861";
+          BigInteger.TryParse(pstr, out p);
+          g = 7;
+          break;
+        case "p41":
+          pstr = "61571157514825784611687343327637886854113";
+          BigInteger.TryParse(pstr, out p);
+          g = 3;
+          break;
+        default:
+          p = CryptoMath.genSimpleRand(digits);
+          g = CryptoMath.calculateFakePrimitiveRoot(p);      
+          break;
+      }
+      pBox.Text = p.ToString();
+      gBox.Text = g.ToString();
+    }
+
+    private void genxBtn_Click(object sender, EventArgs e)
+    {
+      if (p > 2)
+        do
+          x = CryptoMath.genRand(digits);
+        while (x == 0 || x >= p);
+      xBox.Text = x.ToString();
+    }
+
+    private void genyBtn_Click(object sender, EventArgs e)
+    {
+      if (p > 2)
+        y = BigInteger.ModPow(g, x, p);
+      yBox.Text = y.ToString();
+    }
+
+    private void decryptBtn_Click(object sender, EventArgs e)
+    {
+      Encoding encoding = Encoding.GetEncoding(1251);
+      BigInteger apx = BigInteger.ModPow(a, x, p);
+      apx = BigInteger.ModPow(apx, p - 2, p);
+      M = (b * apx) % p;
+      byte[] textBytes = M.ToByteArray();
+      MBox.Text = encoding.GetString(textBytes);
+    }
+
+    private void digitsBox_TextChanged(object sender, EventArgs e)
+    {
+      int i;
+      if (int.TryParse(digitsBox.Text, out i) && i >= 0)
+        digits = i;
+    }
+
+    private void pBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(pBox.Text, out p);
+    }
+
+    private void gBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(gBox.Text, out g);
+    }
+
+    private void xBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(xBox.Text, out x);
+    }
+
+    private void yBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(yBox.Text, out y);
+    }
+
+    private void aBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(aBox.Text, out a);
+    }
+
+    private void bBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(bBox.Text, out b);
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class DiscreteLogAlgorithmsInfoForm : Form
+  {
+    static Random r = new Random();
+    static BigInteger base1, base2, num1, num2, mod1, mod2, ans1, ans2;
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    public DiscreteLogAlgorithmsInfoForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+      // textBox2.Select(0, 0);
+      base1 = new BigInteger(r.Next(100000) + 2);
+      base2 = new BigInteger(r.Next(100000) + 2);
+      mod1 = CryptoMath.genSimpleRand(8);
+      if (mod1 == base1) mod1++;
+      mod2 = CryptoMath.genSimpleRand(8);
+      if (mod2 == base2) mod1++;
+      BigInteger rnd1 = CryptoMath.genRand(100000);
+      BigInteger rnd2 = CryptoMath.genRand(100000);
+      num1 = BigInteger.ModPow(base1, rnd1, mod1);
+      num2 = BigInteger.ModPow(base2, rnd2, mod2);
+      Task1Label.Text =
+        base1.ToString() + "^x  = " + num1.ToString() + " mod " + mod1.ToString();
+      Task2Label.Text =
+        base2.ToString() + "^x  = " + num2.ToString() + " mod " + mod2.ToString();
+    }
+
+    private void DiscreteLogAlgorithmsInfoForm_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      if (BigInteger.TryParse(AnswerBox1.Text, out ans1) && BigInteger.TryParse(AnswerBox2.Text, out ans2))
+      {
+        Answers.AlgorithmicDLOGAnswers[0] = (num1 == BigInteger.ModPow(base1, ans1, mod1));
+        Answers.AlgorithmicDLOGAnswers[1] = (num2 == BigInteger.ModPow(base2, ans2, mod2));
+        //var newForm = new TutorForm3();
+        //newForm.Show();
+        Answers.interruptTutorial = false;
+        this.Close();
+      }
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class DiscreteLogarithmCalculationForm : Form
+  {
+    public DiscreteLogarithmCalculationForm()
+    {
+      InitializeComponent();
+    }
+
+    private void DoMagicBtn_Click(object sender, EventArgs e)
+    {
+      BSGSProgressBar.Value = 0;
+      BigInteger a, b, m, answer;
+      a = 0;
+      b = 0;
+      m = 0;
+      answer = 0;
+
+      ResultLabel.Visible = false;
+      ResultLabel.ForeColor = Color.Red;
+
+      BigInteger.TryParse(ABox.Text, out a);
+      BigInteger.TryParse(BBox.Text, out b);
+      BigInteger.TryParse(MBox.Text, out m);
+
+      if (a < 2 || b < 0 || m < 3 || b > m)
+        ResultLabel.Text = "Неправильный ввод данных";
+      else if (!(CryptoMath.isPrime(m)))
+        ResultLabel.Text = "М должно быть простым";
+      else
+      {
+        if (m.ToString().Length > 10)
+        {
+          ResultLabel.Text = "Слишком большое М - \nВозможна нехватка памяти";
+          ResultLabel.Visible = true;
+        }
+        try
+        {
+          BSGSProgressBar.Visible = true;
+          this.Enabled = false;
+          answer = BabyStepGiantStep.bsgs2(a, b, m, BSGSProgressBar);
+        }
+        catch (OutOfMemoryException)
+        {
+          ResultLabel.Text = "Нехватка оперативной памяти";
+          ResultLabel.Visible = true;
+          this.Enabled = true;
+          return;
+        }
+        if (answer == -1)
+          ResultLabel.Text = "Такого Х не найдено";
+        else
+        {
+          ResultLabel.ForeColor = Color.Green;
+          ResultLabel.Text = $"X = {answer}";
+          if (BigInteger.ModPow(a, answer, m) != b)
+            ResultLabel.Text += "?";
+        }
+      }
+      BSGSProgressBar.Visible = false;
+      ResultLabel.Visible = true;
+      this.Enabled = true;
+    }
+
+    private void PohligButton_Click(object sender, EventArgs e)
+    {
+      BSGSProgressBar.Value = 0;
+      BigInteger a, b, m, answer;
+      a = 0;
+      b = 0;
+      m = 0;
+      answer = 0;
+
+      ResultLabel.Visible = false;
+      ResultLabel.ForeColor = Color.Red;
+
+      BigInteger.TryParse(ABox.Text, out a);
+      BigInteger.TryParse(BBox.Text, out b);
+      BigInteger.TryParse(MBox.Text, out m);
+
+      if (a < 2 || b < 0 || m < 3 || b > m)
+        ResultLabel.Text = "Неправильный ввод данных";
+      else if (!(CryptoMath.isPrime(m)))
+        ResultLabel.Text = "М должно быть простым";
+      else
+      {
+        if (m.ToString().Length > 5)
+        {
+          ResultLabel.Text = "Слишком большое М - \nВозможно крайне долгое время работы";
+          ResultLabel.Visible = true;
+        }
+        try
+        {
+          BSGSProgressBar.Visible = true;
+          this.Enabled = false;
+          answer = SilverPohligHellman.PohligHellman(a, b, m, BSGSProgressBar);
+        }
+        catch (OutOfMemoryException)
+        {
+          ResultLabel.Text = "Нехватка оперативной памяти";
+          ResultLabel.Visible = true;
+          this.Enabled = true;
+          return;
+        }
+        if (answer == -1)
+          ResultLabel.Text = "Такого Х не найдено";
+        else
+        {
+          ResultLabel.ForeColor = Color.Green;
+          ResultLabel.Text = $"X = {answer}";
+
+          if (BigInteger.ModPow(a, answer, m) != b)
+          {
+            ResultLabel.ForeColor = Color.Red;
+            ResultLabel.Text = "Такого Х не найдено";
+          }
+          // ResultLabel.Text += "?";
+        }
+      }
+      BSGSProgressBar.Visible = false;
+      ResultLabel.Visible = true;
+      this.Enabled = true;
+    }
+
+    private void RhoButton_Click(object sender, EventArgs e)
+    {
+      BSGSProgressBar.Value = 0;
+      BigInteger a, b, m, answer;
+      a = 0;
+      b = 0;
+      m = 0;
+      answer = 0;
+
+      ResultLabel.Visible = false;
+      ResultLabel.ForeColor = Color.Red;
+
+      BigInteger.TryParse(ABox.Text, out a);
+      BigInteger.TryParse(BBox.Text, out b);
+      BigInteger.TryParse(MBox.Text, out m);
+
+      if (a < 2 || b < 0 || m < 3 || b > m)
+        ResultLabel.Text = "Неправильный ввод данных";
+      else if (!(CryptoMath.isPrime(m)))
+        ResultLabel.Text = "М должно быть простым";
+      else if (!(CryptoMath.isPrime((m - 1) / 2)))
+        ResultLabel.Text = "Порядок группы М должен быть простым";
+      else
+      {
+        if (m.ToString().Length > 5)
+        {
+          ResultLabel.Text = "Слишком большое М - \nВозможно долгое время работы";
+          ResultLabel.Visible = true;
+        }
+        try
+        {
+          BSGSProgressBar.Visible = true;
+          this.Enabled = false;
+          answer = Pollards_Rho.Pollard(a, b, m, BSGSProgressBar);
+        }
+        catch (OutOfMemoryException)
+        {
+          ResultLabel.Text = "Нехватка оперативной памяти";
+          ResultLabel.Visible = true;
+          this.Enabled = true;
+          return;
+        }
+        if (answer == -1)
+          ResultLabel.Text = "Такого Х не найдено";
+        else
+        {
+          ResultLabel.ForeColor = Color.Green;
+          ResultLabel.Text = $"X = {answer}";
+
+          if (BigInteger.ModPow(a, answer, m) != b)
+          {
+            ResultLabel.ForeColor = Color.Red;
+            ResultLabel.Text = "Такого Х не найдено";
+          }
+          //ResultLabel.Text += "?";
+        }
+      }
+      BSGSProgressBar.Visible = false;
+      ResultLabel.Visible = true;
+      this.Enabled = true;
+    }
+
+    private void RandomDataButton_Click(object sender, EventArgs e)
+    {
+      Random rand = new Random();
+      int size = rand.Next(11) + 2;
+      BigInteger M = 0;
+      while (!CryptoMath.isPrime((M-1)/2))
+        M = CryptoMath.genSimpleRand(size);
+      MBox.Text = M.ToString();
+      ABox.Text = (CryptoMath.genRand(rand.Next(size - 1) + 1)+2).ToString();
+      BBox.Text = (CryptoMath.genRand(rand.Next(size - 1) + 1)).ToString();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class DiscrLogTutor : Form
+  {
+    static Random r = new Random();
+    static BigInteger base1, base2, num1, num2, mod1, mod2, ans1, ans2;
+    public DiscrLogTutor()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+      textBox2.Select(0, 0);
+      base1 = new BigInteger(r.Next(3)+2);
+      base2 = new BigInteger(r.Next(4)+2);
+      mod1 = base1;
+      mod2 = base2;
+      BigInteger rnd1 = new BigInteger(r.Next(5) + 3);
+      BigInteger rnd2 = new BigInteger(r.Next(7) + 3);
+      num1 = BigInteger.ModPow(base1, rnd1, mod1);
+      num2 = BigInteger.ModPow(base2, rnd2, mod2);
+
+      while (mod1 <= base1 || num1 == base1 || num1 == base1*base1 || num1 == 0)
+      {
+        mod1 = new BigInteger(r.Next(5) + 2);
+        rnd1 = new BigInteger(r.Next(5) + 3);
+        num1 = BigInteger.ModPow(base1, rnd1, mod1);
+      }
+      while (mod2 <= base2 || num2 == base2 || num2 == base2 * base2 || num2 == 0)
+      {
+        mod2 = new BigInteger(r.Next(7) + 2);
+        rnd2 = new BigInteger(r.Next(5) + 3);
+        num2 = BigInteger.ModPow(base1, rnd2, mod2);
+      }
+
+      Task1Label.Text = 
+        "Попробуйте найти логарифм по основанию " + base1.ToString() + " и модулю " + mod1.ToString() + " от числа " + num1.ToString() + ":";
+      Task2Label.Text =
+        "Логарифм по основанию " + base2.ToString() + " и модулю " + mod2.ToString() + " от числа " + num2.ToString() + ":";
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      if (BigInteger.TryParse(AnswerBox1.Text, out ans1) && BigInteger.TryParse(AnswerBox2.Text, out ans2))
+      {
+        Answers.DiscreteLogAnswers[0] = (num1 == BigInteger.ModPow(base1, ans1, mod1));
+        Answers.DiscreteLogAnswers[1] = (num2 == BigInteger.ModPow(base2, ans2, mod2));
+        //var newForm = new TutorForm3();
+        //newForm.Show();
+        Answers.interruptTutorial = false;
+        this.Close();
+      }
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class ElGamalInfoForm : Form
+  {
+    public ElGamalInfoForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class EncryptForm : Form
+  {
+    private BigInteger p = new BigInteger(0);
+    private BigInteger g = new BigInteger(0);
+    private BigInteger y = new BigInteger(0);
+    private BigInteger k = new BigInteger(0);
+    private BigInteger a = new BigInteger(0);
+    private BigInteger b = new BigInteger(0);
+    private BigInteger M = new BigInteger(0);
+    public EncryptForm()
+    {
+      InitializeComponent();
+    }
+
+    private void EncryptBtn_Click(object sender, EventArgs e)
+    {
+      if (M < p)
+      {
+        a = BigInteger.ModPow(g, k, p);
+        aBox.Text = a.ToString();
+        b = BigInteger.ModPow(y, k, p);
+        b *= M;
+        b %= p;
+        bBox.Text = b.ToString();
+      }
+    }
+
+    private void pBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(pBox.Text, out p);
+    }
+
+    private void gBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(gBox.Text, out g);
+    }
+
+    private void kBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(kBox.Text, out k);
+      if (k > p - 1) k = 0; 
+    }
+
+    private void MBox_TextChanged(object sender, EventArgs e)
+    {
+      Encoding encoding = Encoding.GetEncoding(1251);
+      byte[] converted = encoding.GetBytes(MBox.Text + (char)0);
+      M = new BigInteger(converted);
+      if (M > p)
+        ERRORLabel.Visible = true;
+      else
+        ERRORLabel.Visible = false;
+    }
+
+    private void genkBtn_Click(object sender, EventArgs e)
+    {
+      // matan.DIGITS = 10;
+      do
+      {
+        k = CryptoMath.genRand(10);
+      } while (k > p - 1);
+      kBox.Text = k.ToString();
+    }
+
+    private void yBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(yBox.Text, out y);
+    }
+
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class GelfondShanksAlgorithmForm : Form
+  {
+    public GelfondShanksAlgorithmForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class GelfondShanksInfoForm : Form
+  {
+    public GelfondShanksInfoForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class GelfondShanksTheoryForm : Form
+  {
+    public GelfondShanksTheoryForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class MainMenuForm : Form
+  {
+    public MainMenuForm()
+    {
+       InitializeComponent();
+    }
+
+    private void startTutorBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow = 0;
+      var formList = new List<Form>();
+
+      formList.Add(new TutorIntroForm());
+      formList.Add(new TutorForm1());
+      formList.Add(new TutorForm2());
+      formList.Add(new TutorForm3());
+      formList.Add(new ElGamalInfoForm());
+      formList.Add(new TutorForm4());
+      formList.Add(new TutorForm5());
+      formList.Add(new TutorForm6());
+      formList.Add(new TutorForm7());
+      formList.Add(new DiscrLogTutor());
+      formList.Add(new DiscreteLogAlgorithmsInfoForm());
+      formList.Add(new GelfondShanksInfoForm());
+      formList.Add(new GelfondShanksTheoryForm());
+      formList.Add(new GelfondShanksAlgorithmForm());
+      formList.Add(new SPHInfoForm());
+      formList.Add(new SPHParticularAlgorithmForm());
+      formList.Add(new SPHFullAlgorithmForm());
+      formList.Add(new RhoInfoForm());
+      formList.Add(new TestQuestionsForm1());
+      formList.Add(new TestQuestionsForm2());
+      formList.Add(new TestQuestionsForm3());
+      formList.Add(new TestQuestionsForm4());
+      formList.Add(new TestQuestionsForm5());
+      formList.Add(new TutorResults());
+
+      while (!Answers.tutorialEnded && !Answers.interruptTutorial)
+      {
+        Answers.interruptTutorial = true;
+        if (Answers.formToShow >= formList.Count)
+          break;
+        formList[Answers.formToShow].ShowDialog();
+        Answers.formToShow++;
+      }
+      //this.Close();
+    }
+
+    private void MainMenuForm_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void fiBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new CalcfiForm();
+      newForm.ShowDialog();
+    }
+
+    private void primitBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new PrimitiveRootForm();
+      newForm.ShowDialog();
+    }
+
+    private void genKeysBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new DecryptForm();
+      newForm.ShowDialog();
+    }
+
+    private void decryptBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new EncryptForm();
+      newForm.ShowDialog();
+    }
+
+    private void primeTestBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new PrimeTestForm();
+      newForm.ShowDialog();
+    }
+
+    private void modPowBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new modPowForm();
+      newForm.ShowDialog();
+    }
+
+    private void AboutBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new AboutForm();
+      newForm.ShowDialog();
+    }
+
+    private void BSGSBtn_Click(object sender, EventArgs e)
+    {
+      var newForm = new DiscreteLogarithmCalculationForm();
+      newForm.ShowDialog();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class modPowForm : Form
+  {
+    BigInteger X = new BigInteger(0);
+    BigInteger Y = new BigInteger(0);
+    BigInteger M = new BigInteger(0);
+    public modPowForm()
+    {
+      InitializeComponent();
+    }
+
+    private void modPowBtn_Click(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(XBox.Text, out X);
+      BigInteger.TryParse(YBox.Text, out Y);
+      BigInteger.TryParse(MBox.Text, out M);
+      if (X*Y*M > 0)
+      {
+        BigInteger result;
+        result = BigInteger.ModPow(X, Y, M);
+        modPowBox.Text = result.ToString();
+      }
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Numerics;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  class Pollards_Rho
+  {
+    static BigInteger[] ext_euclid(BigInteger a, BigInteger b)
+    {
+      if (b == 0)
+      {
+        return new BigInteger[] { a, 1, 0 };
+      }
+      else
+      {
+        BigInteger[] arr_results = ext_euclid(b, a % b);
+        BigInteger d = arr_results[0];
+        BigInteger xx = arr_results[1];
+        BigInteger yy = arr_results[2];
+        BigInteger x = yy;
+        BigInteger y = xx - (a / b) * yy;
+        return new BigInteger[] { d, x, y };
+      }
+    }
+
+    static BigInteger inverse(BigInteger a, BigInteger n)
+    {
+      return ext_euclid(a, n)[1];
+    }
+
+    static BigInteger[] PollardStep(BigInteger x, BigInteger a, BigInteger b, BigInteger G, BigInteger H, BigInteger P, BigInteger Q)
+    {
+      BigInteger sub = x % 3;
+      if (sub == 0)
+      {
+        x = x * G % P;
+        a = (a + 1) % Q;
+      }
+
+      if (sub == 1)
+      {
+        x = x * H % P;
+        b = (b + 1) % Q;
+      }
+
+      if (sub == 2)
+      {
+        x = x * x % P;
+        a = a * 2 % Q;
+        b = b * 2 % Q;
+      }
+      return new BigInteger[] { x, a, b };
+    }
+
+    public static BigInteger Pollard(BigInteger G, BigInteger H, BigInteger P, ProgressBar progress = null)
+    {
+      BigInteger Q = (P - 1) / 2;
+      // Console.WriteLine($"Q = {Q}");
+
+      BigInteger x = G * H;
+      BigInteger a = 1;
+      BigInteger b = 1;
+
+      BigInteger X = x;
+      BigInteger A = a;
+      BigInteger B = b;
+
+      progress.Increment(progress.Width / 10);
+
+      BigInteger tick = P / 20; // for progressbar
+      if (tick == 0)
+        tick = 1;
+
+      for (BigInteger i = 1; i < P; i++)
+      {
+        if (progress != null) // progressbar
+          if (i % tick == 0)      // progressbar!
+          {
+            progress.Increment(progress.Width / 20);  //
+            progress.Update();
+            progress.Refresh();
+            progress.Invalidate();
+          }
+
+        BigInteger[] hedgehog = PollardStep(x, a, b, G, H, P, Q);
+        x = hedgehog[0];
+        a = hedgehog[1];
+        b = hedgehog[2];
+
+        BigInteger[] rabbit = PollardStep(X, A, B, G, H, P, Q);
+        X = rabbit[0];
+        A = rabbit[1];
+        B = rabbit[2];
+        rabbit = PollardStep(X, A, B, G, H, P, Q);
+        X = rabbit[0];
+        A = rabbit[1];
+        B = rabbit[2];
+
+        if (x == X)
+        {
+          break;
+        }
+      }
+
+      BigInteger nom = a - A;
+      BigInteger denom = B - b;
+      BigInteger res = (inverse(denom, Q) * nom) % Q;
+      if (res >= 0 && BigInteger.ModPow(G, res, P) == H)
+        return res;
+      else if (BigInteger.ModPow(G, res + Q, P) == H)
+        return res + Q;
+      else
+        return -1;
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class PrimeTestForm : Form
+  {
+    public PrimeTestForm()
+    {
+      InitializeComponent();
+    }
+
+    private void testBtn_Click(object sender, EventArgs e)
+    {
+      this.Enabled = false;
+      ansLabel.Visible = false;
+      BigInteger testInt;
+      BigInteger.TryParse(inputBox.Text, out testInt);
+      if (testInt > 0)
+      {
+        if (CryptoMath.isPrime(testInt))
+          ansLabel.Text = "Введённое число - простое";
+        else ansLabel.Text = "Введённое число - составное";
+      }
+      else
+        ansLabel.Text = "Введено неправильное значение";
+      ansLabel.Visible = true;
+      this.Enabled = true;
+    }
+
+    private void inputBox_TextChanged(object sender, EventArgs e)
+    {
+      ansLabel.Visible = false;
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class PrimitiveRootForm : Form
+  {
+    int digits = 10;
+    BigInteger modulo = new BigInteger(0);
+    BigInteger primit = new BigInteger(0);
+
+    public PrimitiveRootForm()
+    {
+      InitializeComponent();
+    }
+
+    private void generatepBtn_Click(object sender, EventArgs e)
+    {
+      modulo = CryptoMath.genSimpleRand(digits);
+      pBox.Text = modulo.ToString();
+    }
+
+    private void pBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(pBox.Text, out modulo);
+    }
+
+    private void trueGenBtn1_Click(object sender, EventArgs e)
+    {
+      if (modulo < 3) pBox.Text = "12345"; 
+      primit = CryptoMath.calculatePrimitiveRoot(modulo);
+      trueBox.Text = primit.ToString();
+    }
+
+    private void fakeGenBtn_Click(object sender, EventArgs e)
+    {
+      if (modulo < 3) pBox.Text = "12345"; 
+      primit = CryptoMath.calculateFakePrimitiveRoot(modulo);
+      fakeBox.Text = primit.ToString();
+    }
+
+    private void digitsBox_TextChanged(object sender, EventArgs e)
+    {
+      if (int.TryParse(digitsBox.Text, out digits))
+        return;
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  static class Program
+  {
+    /// <summary>
+    /// The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    static void Main()
+    {
+      Application.EnableVisualStyles();
+      Application.SetCompatibleTextRenderingDefault(false);
+      Application.Run(new MainMenuForm());
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class RhoInfoForm : Form
+  {
+    public RhoInfoForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Numerics;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  class SilverPohligHellman
+  {
+
+    static ProgressBar progress;
+
+    public static List<BigInteger> PrimeFactorization(BigInteger p)
+    {
+      BigInteger d = 2;
+      List<BigInteger> primeFactors = new List<BigInteger>();
+      if (d*d <= p)
+        if (p % d == 0)
+        {
+          primeFactors.Add(d);
+          p /= d;
+        }
+      d += 1;
+      while (d * d <= p)
+      {
+        while (p % d == 0)
+        {
+          primeFactors.Add(d);
+          p /= d;
+        }
+        d += 2;
+        progress.Increment(progress.Width / 100);
+      }
+      if (p > 1)
+        primeFactors.Add(p);
+      return primeFactors;
+    }
+
+    public static List<BigInteger[]> CountOccurences(List<BigInteger> primeFactors)
+    {
+      List<BigInteger[]> res = new List<BigInteger[]>();
+      var set_of_unique = primeFactors.Select(value => value).Distinct();
+      foreach (var x in set_of_unique)
+      {
+        progress.Increment(progress.Width / 100);
+        res.Add(new BigInteger[] { x, primeFactors.Count(elem => elem == x) });
+      }
+      return res;
+    }
+
+    public static BigInteger[] ExtendedGCD(BigInteger a, BigInteger b)
+    {
+      BigInteger a2 = 1;
+      BigInteger a1 = 0;
+      BigInteger b1 = 1;
+      BigInteger b2 = 0;
+
+      while (b > 0)
+      {
+        BigInteger q = a / b;
+        BigInteger r = a % b;
+        BigInteger temp = a1;
+        a1 = a2 - q * a1;
+        a2 = temp;
+        temp = b1;
+        b1 = b2 - q * b1;
+        b2 = temp;
+        a = b;
+        b = r;
+      }
+      return new BigInteger[] { a, a2, b2 };
+    }
+
+    public static BigInteger modularInverse(BigInteger b, BigInteger n)
+    {
+      BigInteger[] res = ExtendedGCD(b, n);
+      BigInteger g = res[0];
+      BigInteger x = res[1];
+      BigInteger ret = 0;
+      if (g == 1)
+      {
+        ret = (x % n);
+        while (x < 0) x += n;
+        return x;
+      }
+      return -1; 
+    }
+
+    public static BigInteger ChineseRemainder(List<BigInteger[]> pairs)
+    {
+      BigInteger N = pairs[0][1];
+      BigInteger X = 0;
+      for (int i = 1; i < pairs.Count; i++)
+      {
+        // BigInteger[] ni = pairs[i,];
+        N *= pairs[i][1];
+        progress.Value = 100 * (pairs.Count * 2 / i);
+      }
+      for (int i = 0; i < pairs.Count; i++)
+      {
+        progress.Value = (int)(pairs.Count * 2 / (i+1));
+        BigInteger ai = pairs[i][0];
+        BigInteger ni = pairs[i][1];
+        BigInteger mi = (N / ni);
+        X += mi * ai * ExtendedGCD(mi, ni)[1];
+      }
+      while (X < 0) X += N;
+      return X % N;
+    }
+
+    public static BigInteger ShanksAlgorithm(BigInteger alpha, BigInteger beta, BigInteger n)
+    {
+      return BabyStepGiantStep.bsgs2(alpha, beta, n);
+      BigInteger m = (n-1).Sqrt() + 1;
+      BigInteger a = BigInteger.ModPow(alpha, m, n);
+      BigInteger b = ExtendedGCD(alpha, n)[1];
+      List<BigInteger[]> L1 = new List<BigInteger[]>();
+      List<BigInteger[]> L2 = new List<BigInteger[]>();
+
+      for (int ii = 0; ii < m; ii++)
+      {
+        L1.Add(new BigInteger[] { ii, BigInteger.ModPow(a, ii, n) });
+        BigInteger second = beta * BigInteger.Pow(b, ii) % n;
+        while (second < 0) second += n;
+        L2.Add(new BigInteger[] { ii, second });
+      }
+
+      L1 = L1.OrderBy(x => x[1]).ToList();
+      L2 = L2.OrderBy(x => x[1]).ToList();
+
+      int i = 0;
+      int j = 0;
+      bool found = false;
+      while (!found && i < m && j < m)
+      {
+        if (L1[j][1] == L2[i][1])
+          return m * L1[j][0] + L2[i][0] % n;
+        else if (BigInteger.Abs(L1[j][1]) > BigInteger.Abs(L2[i][1]))
+          i += 1;
+        else
+          j += 1;
+      }
+      return -1;
+    }
+
+    public static BigInteger[] CongruencePair(BigInteger g, BigInteger h, BigInteger p, BigInteger q, BigInteger e, BigInteger e1, BigInteger e2)
+    {
+      BigInteger alphaInverse = modularInverse(e1, p);
+      BigInteger x = 0;
+      for (BigInteger i = 1; i < e+1; i++)
+      {
+        progress.Value = 100 * (int)(i / e+1);
+        BigInteger a = BigInteger.ModPow(e1, q.Power(e - 1), p);
+        BigInteger b = BigInteger.ModPow(e2 * alphaInverse.Power(x), q.Power(e - i), p);
+        x += ShanksAlgorithm(a, b, p) * (q.Power(i - 1));
+      }
+      return new BigInteger[] { x, q.Power(e) };
+    }
+
+    public static BigInteger PohligHellman(BigInteger h, BigInteger g, BigInteger p, ProgressBar prg = null)
+    {
+      progress = prg;
+      List<BigInteger[]> CountOccurencesList = CountOccurences(PrimeFactorization(p - 1));
+
+      BigInteger tick = CountOccurencesList.Count / 100; // for progressbar
+      if (tick == 0)
+        tick = 1;
+
+      var CongruenceList = new List<BigInteger[]>();
+      for (int i = 0; i < CountOccurencesList.Count; i++)
+      {
+        progress.Value = 100 * (i+1) / (CountOccurencesList.Count+1);
+        progress.Update();
+        progress.Refresh();
+        progress.Invalidate();
+        BigInteger e1 = (h.Power((p - 1) / (CountOccurencesList[i][0].Power(CountOccurencesList[i][1])))) % p;
+        BigInteger e2 = (g.Power((p - 1) / (CountOccurencesList[i][0].Power(CountOccurencesList[i][1])))) % p;
+        try
+        {
+          CongruenceList.Add(CongruencePair(g, h, p, CountOccurencesList[i][0], CountOccurencesList[i][1], e1, e2));
+          // progress.Increment(upd_value);
+        }
+        catch(Exception e)
+        {
+          return -1;
+        }
+      }
+      return ChineseRemainder(CongruenceList);
+    }
+    //////////////////////////////////////////
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class SPHFullAlgorithmForm : Form
+  {
+    public SPHFullAlgorithmForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class SPHInfoForm : Form
+  {
+    public SPHInfoForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class SPHParticularAlgorithmForm : Form
+  {
+    public SPHParticularAlgorithmForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TestQuestionsForm1 : Form
+  {
+    public TestQuestionsForm1()
+    {
+      InitializeComponent();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      //Сюда прикрутить проверку ответов
+      Answers.TestAnswers[0] = TrueAnswer1RButton.Checked;
+      Answers.TestAnswers[1] = TrueAnswer2RButton.Checked;
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void TestQuesionsForm1_Load(object sender, EventArgs e)
+    {
+
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TestQuestionsForm2 : Form
+  {
+    public TestQuestionsForm2()
+    {
+      InitializeComponent();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.TestAnswers[2] = TrueAnswer3RButton.Checked;
+      Answers.TestAnswers[3] = TrueAnswer4RButton.Checked;
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TestQuestionsForm3 : Form
+  {
+    public TestQuestionsForm3()
+    {
+      InitializeComponent();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.TestAnswers[4] = TrueAnswer5RButton.Checked;
+      Answers.TestAnswers[5] = TrueAnswer6RButton.Checked;
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TestQuestionsForm4 : Form
+  {
+    public TestQuestionsForm4()
+    {
+      InitializeComponent();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.TestAnswers[6] = TrueAnswer3RButton.Checked;
+      Answers.TestAnswers[7] = TrueAnswer4RButton.Checked;
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TestQuestionsForm5 : Form
+  {
+    public TestQuestionsForm5()
+    {
+      InitializeComponent();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.TestAnswers[8] = TrueAnswer3RButton.Checked;
+      Answers.TestAnswers[9] = TrueAnswer4RButton.Checked;
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm1 : Form
+  {
+
+    int g1, x1, m1, answer1;
+    int g2, x2, m2, answer2;
+    int g3, x3, m3, answer3;
+    
+    Random rand = new Random();
+
+    public TutorForm1()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+      g1 = rand.Next(2, 4);
+      x1 = rand.Next(2, 4);
+      m1 = rand.Next(3, 20);
+      QuestionLabel1.Text =
+        "Попробуйте возвести " + g1.ToString() + " в степень " + x1.ToString() + " по модулю " + m1.ToString();
+      g2 = rand.Next(2, 10);
+      x2 = rand.Next(2, 6);
+      m2 = rand.Next(5, 20);
+      QuestionLabel2.Text =
+        g2.ToString() + "^" + x2.ToString() + " mod " + m2.ToString() + " = ";
+      g3 = rand.Next(2, 10);
+      x3 = rand.Next(2, 6);
+      m3 = rand.Next(5, 20);
+      QuestionLabel3.Text =
+        g3.ToString() + "^" + x3.ToString() + " mod " + m3.ToString() + " = ";
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      if (int.TryParse(answerBox1.Text, out answer1) && int.TryParse(answerBox2.Text, out answer2) && int.TryParse(answerBox3.Text, out answer3))
+      {
+        Answers.modpowAnswers[0] = (answer1 == BigInteger.ModPow(g1, x1, m1));
+        Answers.modpowAnswers[1] = (answer2 == BigInteger.ModPow(g2, x2, m2));
+        Answers.modpowAnswers[2] = (answer3 == BigInteger.ModPow(g3, x3, m3));
+        //var newForm = new TutorForm2();
+        Answers.interruptTutorial = false;
+        this.Close();
+        //newForm.Show();
+      }
+    }
+
+
+    private void textBox1_TextChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void TutorForm11_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void answerBox_TextChanged(object sender, EventArgs e)
+    {
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm2 : Form
+  {
+    BigInteger fi1, fi2, fi3;
+    BigInteger ans1, ans2, ans3;
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    Random rand = new Random();
+    public TutorForm2()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+      fi1 = rand.Next(2, 30);
+      QuestionLabel1.Text = "fi(" + fi1 + ") = ";
+      fi2 = rand.Next(2, 30);
+      if (fi2 == fi1) fi2++;
+      QuestionLabel2.Text = "fi(" + fi2 + ") = ";
+      fi3 = rand.Next(2, 30);
+      if (fi3 == fi1) fi3++;
+      if (fi3 == fi2) fi3++;
+      QuestionLabel3.Text = "fi(" + fi3 + ") = ";
+    }
+
+    private void button1_Click(object sender, EventArgs e)
+    {
+      if (BigInteger.TryParse(answerBox1.Text, out ans1) && BigInteger.TryParse(answerBox2.Text, out ans2) && BigInteger.TryParse(answerBox3.Text, out ans3))
+      {
+        Answers.EulerAnswers[0] = (ans1 == CryptoMath.phi(fi1));
+        Answers.EulerAnswers[1] = (ans2 == CryptoMath.phi(fi2));
+        Answers.EulerAnswers[2] = (ans3 == CryptoMath.phi(fi3));
+        //var newForm = new TutorForm3();
+        //newForm.Show();
+        Answers.interruptTutorial = false;
+        this.Close();
+      }
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm3 : Form
+  {
+    BigInteger ans1, ans2;
+    public TutorForm3()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void TutorForm3_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      BigInteger.TryParse(answerBox1.Text, out ans1);
+      BigInteger.TryParse(answerBox2.Text, out ans2);
+      Answers.ReverseAnswers[0] = ans1 == 7;
+      Answers.ReverseAnswers[1] = ans2 == 21;
+      //var newForm = new TutorForm4();
+      //newForm.Show();
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm4 : Form
+  {
+    public TutorForm4()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      //var newForm = new TutorForm5();
+      //newForm.Show();
+      this.Close();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+
+    private void textBox1_TextChanged(object sender, EventArgs e)
+    {
+
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm5 : Form
+  {
+    private BigInteger p = new BigInteger(0);
+    private BigInteger g = new BigInteger(0);
+    private BigInteger x = new BigInteger(0);
+    private BigInteger y = new BigInteger(0);
+    private long digits = 30;
+    public TutorForm5()
+    {
+      digits = 30;
+      InitializeComponent();        
+    }
+
+    //генерация р
+    private void generatepBtn_Click(object sender, EventArgs e)
+    {
+      p = CryptoMath.genSimpleRand(digits);
+      gtextBox.Text = "";
+      xtextBox.Text = "";
+      ytextBox.Text = "";
+      ptextBox.Text = p.ToString();
+    }
+
+    private void generategBtn_Click(object sender, EventArgs e)
+    {
+      this.Enabled = false;
+      if (p>2) 
+        if (CryptoMath.DIGITS > 10)
+          g = CryptoMath.calculateFakePrimitiveRoot(p);
+        else
+          g = CryptoMath.calculatePrimitiveRoot(p);
+      gtextBox.Text = g.ToString();
+      this.Enabled = true;
+    }
+
+    private void generatexBtn_Click(object sender, EventArgs e)
+    {
+      if (p>2) 
+         do
+          x = CryptoMath.genRand(digits);
+         while (x == 0 || x >= p);
+      xtextBox.Text = x.ToString();
+    }
+
+    private void generateyBtn_Click(object sender, EventArgs e)
+    {
+      if (p > 2) 
+        y = BigInteger.ModPow(g, x, p);
+      ytextBox.Text = y.ToString();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      if (CryptoMath.isPrime(p) && p > 2 && x > 1 && g > 1 && y > 0)
+      {
+        //var newForm = new TutorForm6(g, p, y, x);
+        //newForm.Show();
+        Answers.g = g;
+        Answers.p = p;
+        Answers.y = y;
+        Answers.x = x;
+        Answers.interruptTutorial = false;
+        this.Close();
+      }
+      if (!CryptoMath.isPrime(p)) wrongpLabel.Visible = true;
+    }
+
+    private void ptextBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(ptextBox.Text, out p);
+
+    }
+
+    private void gtextBox_TextChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void TutorForm2_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void ptextBox_TextChanged_1(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(ptextBox.Text, out p);
+    }
+
+    private void xtextBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(xtextBox.Text, out x);
+    }
+
+    private void ytextBox_TextChanged(object sender, EventArgs e)
+    {
+      //  ytextBox.Text = BigInteger.ModPow(g, x, p).ToString();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm6 : Form
+  {
+    private bool hasLoadedKey = false;
+    private BigInteger p = new BigInteger(0);
+    private BigInteger g = new BigInteger(0);
+    private BigInteger x = new BigInteger(0);
+    private BigInteger y = new BigInteger(0);
+    private BigInteger k = new BigInteger(0);
+    private BigInteger a = new BigInteger(0);
+    private BigInteger b = new BigInteger(0);
+    private BigInteger M = new BigInteger(0);
+    public TutorForm6(/*BigInteger garg, BigInteger parg, BigInteger yarg, BigInteger xarg*/)
+    {
+      InitializeComponent();
+      //g = Answers.g;
+      //p = Answers.p;
+      //y = Answers.y;
+      //x = Answers.x;
+      //gLabel.Text += g.ToString();
+      //pLabel.Text += p.ToString();
+      //yLabel.Text += y.ToString();
+    }
+    
+
+    private void generatekBtn_Click(object sender, EventArgs e)
+    {
+      do
+      {
+        k = CryptoMath.genRand(20);
+      } while (k > p - 1);
+      kBox.Text = k.ToString();
+    }
+
+    private void calcaBtn_Click(object sender, EventArgs e)
+    {
+      a = BigInteger.ModPow(g, k, p);
+      aBox.Text = a.ToString();
+    }
+
+    private void MBox_TextChanged(object sender, EventArgs e)
+    {
+      Encoding encoding = Encoding.GetEncoding(1251);
+      byte[] converted = encoding.GetBytes(MBox.Text + (char)0);
+      M = new BigInteger(converted);
+      if (M >= p) wrongMLabel.Visible = true;
+      else wrongMLabel.Visible = false;
+      aBox.Text = "";
+      bBox.Text = "";
+      a = 0;
+      b = 0;
+    }
+
+    private void calcbbtn_Click(object sender, EventArgs e)
+    {   //подозрительный код, может взять и не заработать
+      b = BigInteger.ModPow(y, k, p);
+      b *= M;
+      b %= p;
+      bBox.Text = b.ToString();
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      if (M < p && M > 0 && a > 0 && b > 0 && k > 0)
+      {
+        //var newForm = new TutorForm7(g, p, y, x, a, b);
+        //newForm.Show();
+        Answers.interruptTutorial = false;
+        Answers.a = a;
+        Answers.b = b;
+        Answers.g = g;
+        Answers.p = p;
+        Answers.y = y;
+        Answers.x = x;
+        this.Close();
+      }
+    }
+
+    private void label9_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void kBox_TextChanged(object sender, EventArgs e)
+    {
+      BigInteger.TryParse(kBox.Text, out k);
+    }
+
+    private void TutorForm6_Load(object sender, EventArgs e)
+    {
+      if (!hasLoadedKey)
+      {
+        g = Answers.g;
+        p = Answers.p;
+        y = Answers.y;
+        x = Answers.x;
+        gLabel.Text += g.ToString();
+        pLabel.Text += p.ToString();
+        yLabel.Text += y.ToString();
+        hasLoadedKey = true;
+      }
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Numerics;
+
+namespace ElgamalTutor
+{
+  public partial class TutorForm7 : Form
+  {
+    private BigInteger p = new BigInteger(0);
+    private BigInteger g = new BigInteger(0);
+    private BigInteger x = new BigInteger(0);
+    private BigInteger y = new BigInteger(0);
+    private BigInteger a = new BigInteger(0);
+    private BigInteger b = new BigInteger(0);
+    private BigInteger M = new BigInteger(65);
+    public TutorForm7(/*BigInteger garg, BigInteger parg, BigInteger yarg, BigInteger xarg, BigInteger aarg, BigInteger barg/*, BigInteger Marg*/)
+    {
+      InitializeComponent();
+      //g = Answers.a;
+      //p = Answers.b;
+      //y = Answers.y;
+      //x = Answers.x;
+      //a = Answers.a;
+      //b = Answers.b;
+      ////M = Marg;
+      //gLabel.Text += g.ToString();
+      //pLabel.Text += p.ToString();
+      //yLabel.Text += y.ToString();
+      //xLabel.Text += x.ToString();
+      //aLabel.Text += a.ToString();
+      //bLabel.Text += b.ToString();
+    }
+
+    private void label2_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void DecryptBtn_Click(object sender, EventArgs e)
+    {
+      Encoding encoding = Encoding.GetEncoding(1251);
+      BigInteger apx = BigInteger.ModPow(a, x, p);
+      apx = BigInteger.ModPow(apx, p - 2, p);
+      M = (b * apx) % p;
+      MNumBox.Text = M.ToString();
+      byte[] textBytes = M.ToByteArray();
+      MtextBox.Text = encoding.GetString(textBytes);
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      if (M > 0)
+      {
+        //var newForm = new TutorResults();
+        //newForm.Show();
+        Answers.interruptTutorial = false;
+        this.Close();
+      }
+    }
+
+    private void TutorForm7_Load(object sender, EventArgs e)
+    {
+      g = Answers.g;
+      p = Answers.p;
+      y = Answers.y;
+      x = Answers.x;
+      a = Answers.a;
+      b = Answers.b;
+      //M = Marg;
+      gLabel.Text += g.ToString();
+      pLabel.Text += p.ToString();
+      yLabel.Text += y.ToString();
+      xLabel.Text += x.ToString();
+      aLabel.Text += a.ToString();
+      bLabel.Text += b.ToString();
+    }
+
+    private void ReturnBtn_Click(object sender, EventArgs e)
+    {
+      Answers.interruptTutorial = false;
+      Answers.formToShow -= 2;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TutorIntroForm : Form
+  {
+    public TutorIntroForm()
+    {
+      InitializeComponent();
+      textBox1.Select(0, 0);
+    }
+
+    private void nextBtn_Click(object sender, EventArgs e)
+    {
+      //var newForm = new TutorForm1();
+      //newForm.Show();
+      Answers.interruptTutorial = false;
+      this.Close();
+    }
+  }
+}
+ 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ElgamalTutor
+{
+  public partial class TutorResults : Form
+  {
+    private static string BoolToResult(bool b)
+    {
+      if (b) return "Верно";
+      else return "Неверно";
+    }
+
+    public TutorResults()
+    {
+      InitializeComponent();
+    }
+
+    private void endBtn_Click(object sender, EventArgs e)
+    {
+      this.Close();
+    }
+
+    private void TutorResults_Load(object sender, EventArgs e)
+    {
+      if (Answers.modpowAnswers[0])
+        powmodAnsLabel1.Text += "Верно";
+      else
+        powmodAnsLabel1.Text += "Неверно";
+      if (Answers.modpowAnswers[1])
+        powmodAnsLabel2.Text += "Верно";
+      else
+        powmodAnsLabel2.Text += "Неверно";
+      if (Answers.modpowAnswers[2])
+        powmodAnsLabel3.Text += "Верно";
+      else
+        powmodAnsLabel3.Text += "Неверно";
+      if (Answers.EulerAnswers[0])
+        EulerAnsLabel1.Text += "Верно";
+      else
+        EulerAnsLabel1.Text += "Неверно";
+      if (Answers.EulerAnswers[1])
+        EulerAnsLabel2.Text += "Верно";
+      else
+        EulerAnsLabel2.Text += "Неверно";
+      if (Answers.EulerAnswers[2])
+        EulerAnsLabel3.Text += "Верно";
+      else
+        EulerAnsLabel3.Text += "Неверно";
+      if (Answers.ReverseAnswers[0])
+        ReverseAnsLabel1.Text += "Верно";
+      else
+        ReverseAnsLabel1.Text += "Неверно";
+      if (Answers.ReverseAnswers[1])
+        ReverseAnsLabel2.Text += "Верно";
+      else
+        ReverseAnsLabel2.Text += "Неверно";
+      if (Answers.DiscreteLogAnswers[0])
+        DiscreteLogAnsLabel1.Text += "Верно";
+      else
+        DiscreteLogAnsLabel1.Text += "Неверно";
+      if (Answers.DiscreteLogAnswers[1])
+        DiscreteLogAnsLabel2.Text += "Верно";
+      else
+        DiscreteLogAnsLabel2.Text += "Неверно";
+      if (Answers.AlgorithmicDLOGAnswers[0])
+        AlgAnsLabel1.Text += "Верно";
+      else
+        AlgAnsLabel1.Text += "Неверно";
+      if (Answers.AlgorithmicDLOGAnswers[1])
+        AlgAnsLabel2.Text += "Верно";
+      else
+        AlgAnsLabel2.Text += "Неверно";
+
+      //////////////////////////
+
+      TestAnswer1Label.Text += BoolToResult(Answers.TestAnswers[0]);
+      TestAnswer2Label.Text += BoolToResult(Answers.TestAnswers[1]);
+      TestAnswer3Label.Text += BoolToResult(Answers.TestAnswers[2]);
+      TestAnswer4Label.Text += BoolToResult(Answers.TestAnswers[3]);
+      TestAnswer5Label.Text += BoolToResult(Answers.TestAnswers[4]);
+      TestAnswer6Label.Text += BoolToResult(Answers.TestAnswers[5]);
+      TestAnswer7Label.Text += BoolToResult(Answers.TestAnswers[6]);
+      TestAnswer8Label.Text += BoolToResult(Answers.TestAnswers[7]);
+      TestAnswer9Label.Text += BoolToResult(Answers.TestAnswers[8]);
+      TestAnswer10Label.Text += BoolToResult(Answers.TestAnswers[9]);
+
+      //Some LINQ magic
+      double summa = Answers.modpowAnswers.Sum(a => a ? 1 : 0) + Answers.EulerAnswers.Sum(a => a ? 1 : 0) 
+        + Answers.ReverseAnswers.Sum(a => a ? 1 : 0) + Answers.DiscreteLogAnswers.Sum(a => a ? 1 : 0) 
+        + Answers.TestAnswers.Sum(a => a ? 1 : 0) + Answers.AlgorithmicDLOGAnswers.Sum(a => a ? 1 : 0);
+      double FinalMark = 3 * (summa / 20) + 2;
+      if (FinalMark % 1 >= 0.5)
+        FinalMark += 1;
+      FinalMarkLabel.Text = ((int)FinalMark).ToString();
+    }
+  }
+}
+ 
+
+ 
 \end{lstlisting}
