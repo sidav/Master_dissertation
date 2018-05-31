@@ -349,7 +349,7 @@ namespace ElgamalTutor
       }
       t = m;
       m = n;
-      for (BigInteger i = 0; i < MILLER_RABIN_ROUNDS; i++)    //максимальное i неплохо бы там log_2(m)
+      for (BigInteger i = 0; i < MILLER_RABIN_ROUNDS; i++)   
       {
         BigInteger a = rand.Next()%(m-3) + 3; 
         BigInteger x = BigInteger.ModPow(a,t,m);
@@ -367,7 +367,7 @@ namespace ElgamalTutor
        return true;
     }
 
-    public static BigInteger calculatePrimitiveRoot(BigInteger p) //!вычислялка первообразного корня по модулю p.
+    public static BigInteger calculatePrimitiveRoot(BigInteger p)
     {
     	List<BigInteger> fact = new List<BigInteger>();
     	BigInteger phi = p-1,  n = phi;
@@ -389,7 +389,7 @@ namespace ElgamalTutor
     	return -1;
     }
 
-    public static BigInteger calculateFakePrimitiveRoot(BigInteger p) //!вычислялка первообразного корня по модулю p.
+    public static BigInteger calculateFakePrimitiveRoot(BigInteger p)
     {
       List<BigInteger> fact = new List<BigInteger>();
       BigInteger phi = p - 1, n = phi;
