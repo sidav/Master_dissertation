@@ -6,7 +6,7 @@
 \usepackage[russian,english]{babel}
 \usepackage{extsizes,amsmath,amsfonts,amssymb}
 \usepackage{amsthm,calc,fp,cite}
-\usepackage[left=3cm,top=2.0cm,right=1.5cm,bottom=2.7cm]{geometry}
+\usepackage[left=2.5cm,top=2.0cm,right=1.5cm,bottom=2.5cm]{geometry}
 %\usepackage[nodisplayskipstretch]{setspace}
 %\setstretch{1.3}
 %\linespread{2}
@@ -50,9 +50,12 @@
 \fancyfoot[R]{\thepage} % установка верхнего колонтитула
 \renewcommand{\footrulewidth}{0pt} % убрать разделительную линию внизу страницы
 \renewcommand{\headrulewidth}{0pt} % убрать разделительную линию вверху страницы
-\fancypagestyle{plain}{
-    \fancyhf{}
-    \rfoot{\thepage}}
+%\fancypagestyle{plain}{
+%    \fancyhf{}
+%    \rfoot{\thepage}}
+\fancyhf{}
+\fancyhead[C]{\thepage}
+\pagestyle{fancy}
 
 % Задает стиль заголовков подразделов
 \makeatletter
