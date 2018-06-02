@@ -75,27 +75,33 @@ namespace ElgamalTutor
     public static BigInteger sqrt(BigInteger n)
     {
       if (n == 0) return 0;
+      
+      BigInteger sqroot = 0;
+      
       if (n > 0)
       {
-        int bitLength = Convert.ToInt32(Math.Ceiling(BigInteger.Log(n, 2)));
-        BigInteger root = BigInteger.One << (bitLength / 2);
+        int lengthInBits = Convert.ToInt32(
+          Math.Ceiling(BigInteger.Log(n, 2))
+        );
+        
+        root = BigInteger.One << (lengthInBits / 2);
 
-        while (!isSqrt(n, root))
+        while (!isSqrtOf(n, sqroot))
         {
-          root += n / root;
+          root += n / sqroot;
           root /= 2;
         }
 
-        return root;
+        return sqroot;
       }
 
       throw new ArithmeticException("NaN");
     }
 
-    private static Boolean isSqrt(BigInteger n, BigInteger root)
+    private static Boolean isSqrtOf(BigInteger n, BigInteger sqroot)
     {
-      BigInteger lowerBound = root * root;
-      BigInteger upperBound = (root + 1) * (root + 1);
+      BigInteger lowerBound = sqroot * sqroot;
+      BigInteger upperBound = (sqroot + 1) * (sqroot + 1);
 
       return (n >= lowerBound && n < upperBound);
     }
