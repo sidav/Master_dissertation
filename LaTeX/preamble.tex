@@ -28,7 +28,8 @@
 \graphicspath{ {images/} }
 % ѕереименовываем "Figure N" в подпис€х картинок в "–ис. N"
 \usepackage{caption}
-\addto\captionsenglish{\renewcommand{\figurename}{–ис.}}
+\captionsetup[figure]{name={–ис.},labelsep=period}
+%\addto\captionsenglish{\renewcommand{\figurename}{–ис.}}
 
 %этот пакет - дл€ того, чтобы можно было принудительно размещать картинки в месте объ€влени€ 
 %(т.е. аргумент [H] в \begin{figure}
